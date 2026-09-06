@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard SIPARPAS - Kabupaten Pasaman</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tabler Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ponytail: Coolors Palette (264653, 2a9d8f, e9c46a, f4a261, e76f51) + Multi-view SPA routing -->
+  <style>
+    :root {
+      --co-charcoal: #264653;
+      --co-persian-green: #2a9d8f;
+      --co-saffron: #e9c46a;
+      --co-sandy-brown: #f4a261;
+      --co-burnt-sienna: #e76f51;
+      --co-bg: #f5f8fa;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--co-bg);
+      color: #2b3445;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Sidebar Styling */
+    .left-sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      z-index: 1050;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-logo {
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .sidebar-nav {
+      padding: 16px 14px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .nav-small-cap {
+      color: #8c9ba5;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 14px 14px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      color: #4a5568;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-link:hover {
+      background-color: #edf8f6;
+      color: var(--co-persian-green);
+    }
+
+    .sidebar-link.active {
+      background-color: var(--co-charcoal);
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(38, 70, 83, 0.25);
+    }
+
+    .sidebar-link.active i {
+      color: var(--co-saffron) !important;
+    }
+
+    .sidebar-link i {
+      font-size: 1.25rem;
+      color: #718096;
+    }
+
+    /* Main Area */
+    .body-wrapper {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .top-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 28px;
+    }
+
+    .card {
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 2px 14px rgba(38, 70, 83, 0.05);
+      background-color: #ffffff;
+    }
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(38, 70, 83, 0.1);
+    }
+
+    /* Custom Palette Accent Utility Classes */
+    .round-48 {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .bg-pal-charcoal { background-color: rgba(38, 70, 83, 0.12); color: var(--co-charcoal); }
+    .bg-pal-green { background-color: rgba(42, 157, 143, 0.12); color: var(--co-persian-green); }
+    .bg-pal-saffron { background-color: rgba(233, 196, 106, 0.2); color: #b78a1a; }
+    .bg-pal-orange { background-color: rgba(244, 162, 97, 0.18); color: #d66f1f; }
+    .bg-pal-sienna { background-color: rgba(231, 111, 81, 0.14); color: var(--co-burnt-sienna); }
+
+    .text-charcoal { color: var(--co-charcoal) !important; }
+    .text-green { color: var(--co-persian-green) !important; }
+    .text-saffron { color: #b78a1a !important; }
+    .text-orange { color: #d66f1f !important; }
+    .text-sienna { color: var(--co-burnt-sienna) !important; }
+
+    .btn-pal-charcoal {
+      background-color: var(--co-charcoal);
+      color: #ffffff;
+      border: 0;
+    }
+    .btn-pal-charcoal:hover {
+      background-color: #1a323c;
+      color: #ffffff;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--co-persian-green);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(42, 157, 143, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(42, 157, 143, 0); }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 290px;
+      width: 100%;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .view-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 991.98px) {
+      .left-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: -260px;
+      }
+      .left-sidebar.show {
+        left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- Left Sidebar (Flexy-style with Palette) -->
+  <aside class="left-sidebar" id="sidebar">
+    <div class="brand-logo">
+      <div class="d-flex align-items-center gap-2">
+        <div class="round-48" style="width:40px; height:40px; background-color: var(--co-charcoal); color:#ffffff; border-radius:10px;">
+          <i class="ti ti-chart-pie fs-5"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-0 text-charcoal">SIPARPAS</h6>
+          <small class="text-muted fs-8">Kabupaten Pasaman</small>
+        </div>
+      </div>
+      <button class="btn btn-sm text-secondary d-lg-none" id="closeSidebar"><i class="ti ti-x fs-5"></i></button>
+    </div>
+
+    <!-- Sidebar Navigation for Distinct Views -->
+    <nav class="sidebar-nav">
+      <div class="nav-small-cap">MENU UTAMA</div>
+      <a href="javascript:void(0)" class="sidebar-link active" onclick="navigateView('view-all', this)">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>Dashboard Utama</span>
+      </a>
+
+      <div class="nav-small-cap mt-3">ANALITIK SPESIFIK</div>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="navigateView('view-tren', this)">
+        <i class="ti ti-chart-line"></i>
+        <span>Tren Pengisian</span>
+      </a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="navigateView('view-wilayah', this)">
+        <i class="ti ti-map-pin"></i>
+        <span>Sebaran Wilayah</span>
+      </a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="navigateView('view-wisatawan', this)">
+        <i class="ti ti-users"></i>
+        <span>Kunjungan Wisatawan</span>
+      </a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="navigateView('view-akomodasi', this)">
+        <i class="ti ti-bed"></i>
+        <span>Hunian & Kamar</span>
+      </a>
+
+      <div class="nav-small-cap mt-3">EXPLORER & ALAT</div>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="navigateView('view-explorer', this)">
+        <i class="ti ti-chart-dots"></i>
+        <span>Custom Chart Explorer</span>
+      </a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="resetFilters()">
+        <i class="ti ti-refresh"></i>
+        <span>Refresh / Reset Data</span>
+      </a>
+    </nav>
+
+    <div class="p-3 border-top">
+      <div class="p-3 rounded-3 text-center" style="background: rgba(42, 157, 143, 0.1);">
+        <small class="fw-bold d-block mb-1 text-green">Google Apps Script</small>
+        <span class="badge rounded-pill px-2 py-1 fs-8" style="background-color: var(--co-persian-green); color: #fff;">Terhubung Live</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Body Wrapper -->
+  <div class="body-wrapper">
+
+    <!-- Top Header -->
+    <header class="top-header d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="ti ti-menu-2 fs-5"></i></button>
+        <div>
+          <h5 class="fw-bold mb-0 text-charcoal" id="page-title">Dashboard Utama (Seluruh Analitik)</h5>
+          <small class="text-muted" id="page-subtitle">Visualisasi terpadu dari Form Responses 1</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2 font-semibold" style="background-color: rgba(42, 157, 143, 0.12); color: var(--co-persian-green);">
+          <span class="pulse-dot"></span> Realtime Data
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container-fluid px-4 py-4">
+
+      <!-- Filter Bar: Date Range & Kecamatan -->
+      <div class="card p-3 mb-4 shadow-sm border">
+        <div class="card-body p-1">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar-event me-1 text-green"></i> Dari Tanggal</label>
+              <input type="date" id="filter-start-date" class="form-control form-control-sm">
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar-event me-1 text-green"></i> Sampai Tanggal</label>
+              <input type="date" id="filter-end-date" class="form-control form-control-sm">
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-map-pin me-1 text-green"></i> Filter Kecamatan</label>
+              <select id="filter-kecamatan" class="form-select form-select-sm">
+                <option value="ALL">Semua Kecamatan</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3 d-flex gap-2">
+              <button id="btn-filter" class="btn btn-pal-charcoal btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                <i class="ti ti-filter fs-6"></i> Terapkan Filter
+              </button>
+              <button id="btn-reset" class="btn btn-light btn-sm d-flex align-items-center justify-content-center" title="Reset Filter">
+                <i class="ti ti-refresh fs-6"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards (1 Row - 6 Cards with Coolors Palette) -->
+      <div class="row g-3 mb-4">
+        <!-- Card 1: Total Responden (Charcoal) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-charcoal"><i class="ti ti-users fs-4"></i></div>
+                <h3 class="fw-bolder text-charcoal mb-0" id="txt-total">0</h3>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Total Usaha</p>
+              <small class="text-muted fs-8">Responden</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Operasional Berjalan (Persian Green) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-green"><i class="ti ti-building-store fs-4"></i></div>
+                <h3 class="fw-bolder text-green mb-0" id="txt-aktif">0</h3>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Usaha Aktif</p>
+              <small class="text-muted fs-8">Beroperasi</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Wisatawan Nusantara (Saffron) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-saffron"><i class="ti ti-plane-departure fs-4"></i></div>
+                <h3 class="fw-bolder text-saffron mb-0" id="txt-domestik">0</h3>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Wisnus</p>
+              <small class="text-muted fs-8">Dalam negeri</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Wisatawan Mancanegara (Sandy Brown) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-orange"><i class="ti ti-world fs-4"></i></div>
+                <h3 class="fw-bolder text-orange mb-0" id="txt-mancanegara">0</h3>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Wisman</p>
+              <small class="text-muted fs-8">Luar negeri</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Pendapatan Tiket (Burnt Sienna) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-sienna"><i class="ti ti-currency-dollar fs-4"></i></div>
+                <h4 class="fw-bolder text-sienna mb-0 text-truncate" id="txt-pendapatan">Rp 0</h4>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Pendapatan</p>
+              <small class="text-muted fs-8">Tiket/retribusi</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6: Tingkat Hunian Hotel (Persian Green) -->
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="card card-hover h-100 p-2">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="round-48 bg-pal-green"><i class="ti ti-bed fs-4"></i></div>
+                <h3 class="fw-bolder text-green mb-0" id="txt-occupancy">0%</h3>
+              </div>
+              <p class="text-muted text-uppercase fw-semibold fs-7 tracking-wide mb-0 text-truncate">Occupancy</p>
+              <small class="text-muted fs-8">Hunian hotel</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SECTIONS / VIEWS ================= -->
+
+      <!-- VIEW 1: ALL CHARTS (DASHBOARD UTAMA) -->
+      <div id="view-all" class="view-section active">
+        <!-- Row 1 -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-lg-7">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-0 text-charcoal">Tren Pengisian Form Responden (Line)</h5>
+                    <small class="text-muted">Aktivitas kuesioner dari waktu ke waktu</small>
+                  </div>
+                  <span class="badge bg-pal-green"><i class="ti ti-chart-line me-1"></i> Linimasa</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartTimeline"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-5">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Proporsi Kategori Usaha (Doughnut)</h5>
+                  <span class="badge bg-pal-charcoal">Kategori</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartKategori"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-lg-7">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Sebaran Usaha per Kecamatan (Bar)</h5>
+                  <span class="badge bg-pal-green">Wilayah</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartKecamatan"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-5">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Status Keberlangsungan (Pie)</h5>
+                  <span class="badge bg-pal-green">Kondisi</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartOperasional"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Perbandingan Pengunjung Wisatawan (Bar)</h5>
+                  <span class="badge bg-pal-orange">Kunjungan</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartPengunjung"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Kapasitas vs Kamar Terjual (Bar)</h5>
+                  <span class="badge bg-pal-saffron">Akomodasi</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartAkomodasi"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Kepadatan Sebaran Wilayah (Polar Area)</h5>
+                  <span class="badge bg-pal-sienna">Kepadatan</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="chartPolar"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 p-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="fw-bold mb-0 text-charcoal">Metrik Efisiensi & Persentase Usaha</h5>
+                  <span class="badge bg-pal-charcoal">Indikator</span>
+                </div>
+
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-secondary fw-semibold fs-7">Usaha Beroperasi Aktif</span>
+                    <span class="fw-bold text-green" id="txt-pct-aktif">0%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" id="bar-aktif" role="progressbar" style="width: 0%; background-color: var(--co-persian-green);"></div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-secondary fw-semibold fs-7">Rata-rata Hunian Hotel (Occupancy)</span>
+                    <span class="fw-bold text-saffron" id="txt-pct-occupancy">0%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" id="bar-occupancy" role="progressbar" style="width: 0%; background-color: var(--co-saffron);"></div>
+                  </div>
+                </div>
+
+                <hr class="my-3">
+
+                <h6 class="fw-bold text-muted text-uppercase tracking-wide fs-7 mb-2">Rincian Kategori Usaha</h6>
+                <div id="kategori-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 130px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: TREN PENGISIAN -->
+      <div id="view-tren" class="view-section">
+        <div class="card p-4 mb-4">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <h4 class="fw-bold text-charcoal mb-1">Tren & Aktivitas Respon Form</h4>
+              <p class="text-muted small mb-0">Linimasa data masuk dari responden pariwisata</p>
+            </div>
+            <span class="badge bg-pal-green px-3 py-2 fs-7"><i class="ti ti-calendar me-1"></i> Linimasa Data</span>
+          </div>
+          <div style="height: 420px; position: relative;">
+            <canvas id="chartTrenDedicated"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: SEBARAN WILAYAH -->
+      <div id="view-wilayah" class="view-section">
+        <div class="row g-4">
+          <div class="col-12 col-lg-8">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Distribusi per Kecamatan</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartWilayahDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Kepadatan Wilayah</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartPolarDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: KUNJUNGAN WISATAWAN -->
+      <div id="view-wisatawan" class="view-section">
+        <div class="row g-4">
+          <div class="col-12 col-lg-8">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Perbandingan Domestik vs Asing</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartWisatawanDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Rasio Kategori Usaha</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartKategoriDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 5: HUNIAN & KAMAR -->
+      <div id="view-akomodasi" class="view-section">
+        <div class="row g-4">
+          <div class="col-12 col-lg-7">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Analisis Kapasitas Kamar</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartAkomodasiDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-5">
+            <div class="card p-4 h-100">
+              <h4 class="fw-bold text-charcoal mb-3">Status Operasional Usaha</h4>
+              <div style="height: 400px; position: relative;">
+                <canvas id="chartOperasionalDedicated"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 6: CUSTOM EXPLORER -->
+      <div id="view-explorer" class="view-section">
+        <div class="card p-4 mb-4">
+          <div class="card-body p-0">
+            <h4 class="fw-bold text-charcoal mb-1">Custom Chart Explorer</h4>
+            <p class="text-muted small mb-4">Pilih pertanyaan / kolom mana saja dari Form Responden 1 untuk divisualisasikan dengan tipe grafik pilihan Anda.</p>
+            
+            <div class="row g-3 mb-4">
+              <div class="col-12 col-md-7">
+                <label for="select-column" class="form-label fw-semibold fs-7 text-charcoal">Pilih Kolom Data Responden:</label>
+                <select id="select-column" class="form-select border-secondary shadow-sm"></select>
+              </div>
+              <div class="col-12 col-md-5">
+                <label for="select-chart-type" class="form-label fw-semibold fs-7 text-charcoal">Pilih Tipe Grafik:</label>
+                <select id="select-chart-type" class="form-select border-secondary shadow-sm">
+                  <option value="bar">Bar Chart (Batang Tegak)</option>
+                  <option value="horizontalBar">Horizontal Bar Chart (Batang Mendatar)</option>
+                  <option value="line">Line Chart (Garis)</option>
+                  <option value="doughnut">Doughnut Chart (Donat)</option>
+                  <option value="pie">Pie Chart (Lingkaran)</option>
+                  <option value="polarArea">Polar Area Chart</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-4">
+              <div class="col-12 col-lg-8">
+                <div class="border rounded-3 p-3 bg-light" style="min-height: 420px; position: relative;">
+                  <canvas id="chartCustom"></canvas>
+                </div>
+              </div>
+              <div class="col-12 col-lg-4">
+                <h6 class="fw-bold text-charcoal mb-3">Frekuensi Jawaban Responden</h6>
+                <div id="custom-breakdown-list" class="list-group list-group-flush border rounded-3 bg-white overflow-auto" style="max-height: 400px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="text-center text-muted py-3 fs-7">
+        <p class="mb-0">&copy; 2026 Dinas Pariwisata Kabupaten Pasaman. Dashboard SIPARPAS.</p>
+      </footer>
+    </main>
+
+  </div>
+</div>
+
+<!-- Bootstrap 5 Bundle JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Dashboard JS Logic -->
+<script>
+  let rawDataGlobal = [];
+  let headersGlobal = [];
+  let chartInstances = {};
+  let customChartInstance = null;
+  let currentSummaryData = null;
+
+  // Coolors Palette: #264653, #2a9d8f, #e9c46a, #f4a261, #e76f51
+  const coolorsPalette = [
+    '#264653', // Charcoal
+    '#2a9d8f', // Persian Green
+    '#e9c46a', // Saffron
+    '#f4a261', // Sandy Brown
+    '#e76f51', // Burnt Sienna
+    '#1d3557', // Navy Dark Accent
+    '#457b9d', // Slate Blue Accent
+    '#a8dadc'  // Ice Blue Accent
+  ];
+
+  const viewTitles = {
+    'view-all': { title: 'Dashboard Utama (Seluruh Analitik)', sub: 'Visualisasi terpadu dari Form Responses 1' },
+    'view-tren': { title: 'Analitik Tren Pengisian Form', sub: 'Linimasa pengisian respon kuesioner dari waktu ke waktu' },
+    'view-wilayah': { title: 'Sebaran Wilayah & Kecamatan', sub: 'Distribusi usaha dan destinasi di 12 kecamatan Pasaman' },
+    'view-wisatawan': { title: 'Kunjungan Wisatawan Nusantara & Mancanegara', sub: 'Data perbandingan trafik pengunjung wisata' },
+    'view-akomodasi': { title: 'Data Akomodasi, Hunian & Operasional', sub: 'Tingkat hunian kamar dan statistik keberlangsungan usaha' },
+    'view-explorer': { title: 'Custom Chart Explorer', sub: 'Visualisasikan pertanyaan apa pun secara kustom' }
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('toggleSidebar').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('show');
+    });
+    document.getElementById('closeSidebar').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('show');
+    });
+
+    // Initial load
+    fetchData();
+
+    // Auto-refresh data every 30 seconds for real-time sync
+    setInterval(fetchData, 30000);
+
+    document.getElementById('btn-filter').addEventListener('click', applyFilters);
+    document.getElementById('btn-reset').addEventListener('click', resetFilters);
+    document.getElementById('select-column').addEventListener('change', renderCustomChart);
+    document.getElementById('select-chart-type').addEventListener('change', renderCustomChart);
+  });
+
+  function fetchData() {
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run
+        .withSuccessHandler(initDashboardData)
+        .withFailureHandler(function(err) {
+          console.error('Error Apps Script:', err);
+        })
+        .getDashboardData();
+    } else {
+      console.log('Mock Preview Mode');
+      initDashboardData(getMockData());
+    }
+  }
+
+  // ponytail: SPA View Switcher for dynamic layout swapping from sidebar
+  function navigateView(viewId, element) {
+    document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+    const target = document.getElementById(viewId);
+    if (target) target.classList.add('active');
+
+    if (viewTitles[viewId]) {
+      document.getElementById('page-title').textContent = viewTitles[viewId].title;
+      document.getElementById('page-subtitle').textContent = viewTitles[viewId].sub;
+    }
+
+    // Re-render dedicated charts for view when switched
+    if (currentSummaryData) {
+      renderDedicatedCharts(viewId, currentSummaryData);
+    }
+    if (viewId === 'view-explorer') {
+      renderCustomChart();
+    }
+
+    if (window.innerWidth < 992) {
+      document.getElementById('sidebar').classList.remove('show');
+    }
+  }
+
+  function initDashboardData(res) {
+    if (!res) return;
+    rawDataGlobal = res.rawData || [];
+    headersGlobal = res.headers || [];
+
+    populateKecamatanFilter(rawDataGlobal);
+    populateColumnSelector(headersGlobal);
+    applyFilters();
+  }
+
+  function populateKecamatanFilter(rows) {
+    const kecSelect = document.getElementById('filter-kecamatan');
+    kecSelect.innerHTML = '<option value="ALL">Semua Kecamatan</option>';
+    
+    const kecSet = new Set();
+    rows.forEach(r => {
+      for (const k in r) {
+        if (k.toLowerCase().includes('kecamatan')) {
+          if (r[k] && r[k] !== '-') kecSet.add(r[k].trim());
+        }
+      }
+    });
+
+    Array.from(kecSet).sort().forEach(kec => {
+      const opt = document.createElement('option');
+      opt.value = kec;
+      opt.textContent = kec;
+      kecSelect.appendChild(opt);
+    });
+  }
+
+  function resetFilters() {
+    document.getElementById('filter-start-date').value = '';
+    document.getElementById('filter-end-date').value = '';
+    document.getElementById('filter-kecamatan').value = 'ALL';
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const startDateVal = document.getElementById('filter-start-date').value;
+    const endDateVal = document.getElementById('filter-end-date').value;
+    const selectedKec = document.getElementById('filter-kecamatan').value;
+
+    const startDate = startDateVal ? new Date(startDateVal) : null;
+    const endDate = endDateVal ? new Date(endDateVal + 'T23:59:59') : null;
+
+    const filteredRows = rawDataGlobal.filter(row => {
+      if (startDate || endDate) {
+        let timestampStr = row['Timestamp'] || row['timestamp'] || row[headersGlobal[0]];
+        if (timestampStr) {
+          let rowDate = new Date(timestampStr);
+          if (!isNaN(rowDate.getTime())) {
+            if (startDate && rowDate < startDate) return false;
+            if (endDate && rowDate > endDate) return false;
+          }
+        }
+      }
+
+      if (selectedKec !== 'ALL') {
+        let rowKec = '';
+        for (const k in row) {
+          if (k.toLowerCase().includes('kecamatan')) {
+            rowKec = row[k];
+            break;
+          }
+        }
+        if (rowKec !== selectedKec) return false;
+      }
+
+      return true;
+    });
+
+    calculateAndRender(filteredRows);
+    renderCustomChart();
+  }
+
+  function calculateAndRender(rows) {
+    let summary = {
+      total: rows.length,
+      kategori: {},
+      kecamatan: {},
+      operasional: { "Ya (Aktif)": 0, "Tidak (Tutup)": 0 },
+      pengunjung: { domestik: 0, mancanegara: 0 },
+      akomodasi: { kamarTersedia: 0, kamarTerisi: 0, tingkatOccupancy: 0 },
+      pendapatan: 0,
+      timeline: {}
+    };
+
+    rows.forEach(r => {
+      let ts = r['Timestamp'] || r['timestamp'] || r[headersGlobal[0]];
+      if (ts) {
+        let d = new Date(ts);
+        if (!isNaN(d.getTime())) {
+          let dateKey = d.toISOString().split('T')[0];
+          summary.timeline[dateKey] = (summary.timeline[dateKey] || 0) + 1;
+        }
+      }
+
+      let jenis = 'Lainnya';
+      for (const k in r) {
+        let lk = k.toLowerCase();
+        if (lk.includes('jenis usaha') || lk.includes('jenis destinasi') || lk.includes('jenis akomodasi')) {
+          if (r[k] && r[k] !== '-') jenis = r[k];
+        }
+      }
+      summary.kategori[jenis] = (summary.kategori[jenis] || 0) + 1;
+
+      let kec = 'Tidak Diketahui';
+      for (const k in r) {
+        if (k.toLowerCase().includes('kecamatan')) {
+          if (r[k] && r[k] !== '-') kec = r[k];
+        }
+      }
+      summary.kecamatan[kec] = (summary.kecamatan[kec] || 0) + 1;
+
+      for (const k in r) {
+        if (k.toLowerCase().includes('beroperasi')) {
+          if (r[k] && r[k].toLowerCase().includes('ya')) {
+            summary.operasional["Ya (Aktif)"]++;
+          } else {
+            summary.operasional["Tidak (Tutup)"]++;
+          }
+        }
+      }
+
+      for (const k in r) {
+        let lk = k.toLowerCase();
+        if (lk.includes('dalam negeri')) summary.pengunjung.domestik += parseInt(r[k]) || 0;
+        if (lk.includes('luar negeri')) summary.pengunjung.mancanegara += parseInt(r[k]) || 0;
+        if (lk.includes('pendapatan') || lk.includes('retribusi')) summary.pendapatan += parseRupiah(r[k]);
+        if (lk.includes('jumlah kamar tersedia') || lk.includes('seluruh kamar')) summary.akomodasi.kamarTersedia += parseInt(r[k]) || 0;
+        if (lk.includes('kamar yang terjual') || lk.includes('terjual')) summary.akomodasi.kamarTerisi += parseInt(r[k]) || 0;
+      }
+    });
+
+    if (summary.akomodasi.kamarTersedia > 0) {
+      summary.akomodasi.tingkatOccupancy = (summary.akomodasi.kamarTerisi / summary.akomodasi.kamarTersedia) * 100;
+    }
+
+    currentSummaryData = summary;
+
+    if (document.getElementById('txt-total')) document.getElementById('txt-total').textContent = summary.total;
+    if (document.getElementById('txt-aktif')) document.getElementById('txt-aktif').textContent = summary.operasional["Ya (Aktif)"];
+    if (document.getElementById('txt-domestik')) document.getElementById('txt-domestik').textContent = formatNumber(summary.pengunjung.domestik);
+    if (document.getElementById('txt-mancanegara')) document.getElementById('txt-mancanegara').textContent = formatNumber(summary.pengunjung.mancanegara);
+    if (document.getElementById('txt-pendapatan')) document.getElementById('txt-pendapatan').textContent = formatRupiah(summary.pendapatan);
+    if (document.getElementById('txt-occupancy')) document.getElementById('txt-occupancy').textContent = summary.akomodasi.tingkatOccupancy.toFixed(1) + '%';
+
+    const pctAktif = summary.total > 0 ? (summary.operasional["Ya (Aktif)"] / summary.total) * 100 : 0;
+    document.getElementById('txt-pct-aktif').textContent = pctAktif.toFixed(0) + '%';
+    document.getElementById('bar-aktif').style.width = pctAktif + '%';
+
+    const pctOcc = Math.min(summary.akomodasi.tingkatOccupancy, 100);
+    document.getElementById('txt-pct-occupancy').textContent = pctOcc.toFixed(1) + '%';
+    document.getElementById('bar-occupancy').style.width = pctOcc + '%';
+
+    renderKategoriList(summary.kategori, summary.total);
+    renderOverviewCharts(summary);
+
+    // Also update any active dedicated view
+    const activeSec = document.querySelector('.view-section.active');
+    if (activeSec && activeSec.id !== 'view-all') {
+      renderDedicatedCharts(activeSec.id, summary);
+    }
+  }
+
+  function renderOverviewCharts(s) {
+    const timeLabels = Object.keys(s.timeline).sort();
+    const timeValues = timeLabels.map(k => s.timeline[k]);
+    createOrUpdateChart('chartTimeline', 'line', {
+      labels: timeLabels.length > 0 ? timeLabels : ['Belum Ada Data Tanggal'],
+      datasets: [{
+        label: 'Respon Masuk',
+        data: timeValues.length > 0 ? timeValues : [0],
+        borderColor: '#2a9d8f',
+        backgroundColor: 'rgba(42, 157, 143, 0.15)',
+        tension: 0.35,
+        fill: true,
+        pointBackgroundColor: '#2a9d8f',
+        pointRadius: 5
+      }]
+    }, {
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    });
+
+    const katLabels = Object.keys(s.kategori);
+    createOrUpdateChart('chartKategori', 'doughnut', {
+      labels: katLabels,
+      datasets: [{ data: Object.values(s.kategori), backgroundColor: coolorsPalette.slice(0, katLabels.length), borderWidth: 2 }]
+    }, { plugins: { legend: { position: 'bottom' } } });
+
+    const kecLabels = Object.keys(s.kecamatan);
+    createOrUpdateChart('chartKecamatan', 'bar', {
+      labels: kecLabels,
+      datasets: [{
+        label: 'Jumlah Usaha/Destinasi',
+        data: Object.values(s.kecamatan),
+        backgroundColor: '#264653',
+        borderRadius: 8,
+        barThickness: 32
+      }]
+    }, {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
+    });
+
+    createOrUpdateChart('chartOperasional', 'pie', {
+      labels: Object.keys(s.operasional),
+      datasets: [{ data: Object.values(s.operasional), backgroundColor: ['#2a9d8f', '#e76f51'], borderWidth: 2 }]
+    }, { plugins: { legend: { position: 'bottom' } } });
+
+    createOrUpdateChart('chartPengunjung', 'bar', {
+      labels: ['Wisatawan Nusantara (Domestik)', 'Wisatawan Mancanegara (Asing)'],
+      datasets: [{
+        label: 'Total Pengunjung',
+        data: [s.pengunjung.domestik, s.pengunjung.mancanegara],
+        backgroundColor: ['#e9c46a', '#f4a261'],
+        borderRadius: 8,
+        barThickness: 36
+      }]
+    }, {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } }
+    });
+
+    createOrUpdateChart('chartAkomodasi', 'bar', {
+      labels: ['Kamar Tersedia', 'Kamar Terjual / Terisi'],
+      datasets: [{
+        label: 'Jumlah Kamar',
+        data: [s.akomodasi.kamarTersedia, s.akomodasi.kamarTerisi],
+        backgroundColor: ['#2a9d8f', '#e76f51'],
+        borderRadius: 8,
+        barThickness: 45
+      }]
+    }, {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
+    });
+
+    createOrUpdateChart('chartPolar', 'polarArea', {
+      labels: kecLabels.slice(0, 6),
+      datasets: [{
+        data: Object.values(s.kecamatan).slice(0, 6),
+        backgroundColor: coolorsPalette.slice(0, 6)
+      }]
+    }, { plugins: { legend: { position: 'bottom' } } });
+  }
+
+  function renderDedicatedCharts(viewId, s) {
+    if (viewId === 'view-tren') {
+      const timeLabels = Object.keys(s.timeline).sort();
+      const timeValues = timeLabels.map(k => s.timeline[k]);
+      createOrUpdateChart('chartTrenDedicated', 'line', {
+        labels: timeLabels.length > 0 ? timeLabels : ['Belum Ada Data Tanggal'],
+        datasets: [{
+          label: 'Frekuensi Responden',
+          data: timeValues.length > 0 ? timeValues : [0],
+          borderColor: '#2a9d8f',
+          backgroundColor: 'rgba(42, 157, 143, 0.2)',
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#264653',
+          pointRadius: 6
+        }]
+      }, {
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+          x: { grid: { display: false } }
+        }
+      });
+    } else if (viewId === 'view-wilayah') {
+      const kecLabels = Object.keys(s.kecamatan);
+      createOrUpdateChart('chartWilayahDedicated', 'bar', {
+        labels: kecLabels,
+        datasets: [{
+          label: 'Jumlah Usaha/Destinasi',
+          data: Object.values(s.kecamatan),
+          backgroundColor: '#264653',
+          borderRadius: 8
+        }]
+      }, {
+        scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } } }
+      });
+
+      createOrUpdateChart('chartPolarDedicated', 'polarArea', {
+        labels: kecLabels.slice(0, 6),
+        datasets: [{
+          data: Object.values(s.kecamatan).slice(0, 6),
+          backgroundColor: coolorsPalette.slice(0, 6)
+        }]
+      }, { plugins: { legend: { position: 'bottom' } } });
+    } else if (viewId === 'view-wisatawan') {
+      createOrUpdateChart('chartWisatawanDedicated', 'bar', {
+        labels: ['Wisatawan Nusantara (Domestik)', 'Wisatawan Mancanegara (Asing)'],
+        datasets: [{
+          label: 'Jumlah Pengunjung',
+          data: [s.pengunjung.domestik, s.pengunjung.mancanegara],
+          backgroundColor: ['#e9c46a', '#f4a261'],
+          borderRadius: 8,
+          barThickness: 50
+        }]
+      }, {
+        scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } } }
+      });
+
+      const katLabels = Object.keys(s.kategori);
+      createOrUpdateChart('chartKategoriDedicated', 'doughnut', {
+        labels: katLabels,
+        datasets: [{ data: Object.values(s.kategori), backgroundColor: coolorsPalette.slice(0, katLabels.length) }]
+      }, { plugins: { legend: { position: 'bottom' } } });
+    } else if (viewId === 'view-akomodasi') {
+      createOrUpdateChart('chartAkomodasiDedicated', 'bar', {
+        labels: ['Kamar Tersedia', 'Kamar Terjual / Terisi'],
+        datasets: [{
+          label: 'Jumlah Kamar',
+          data: [s.akomodasi.kamarTersedia, s.akomodasi.kamarTerisi],
+          backgroundColor: ['#2a9d8f', '#e76f51'],
+          borderRadius: 8,
+          barThickness: 60
+        }]
+      }, {
+        scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } } }
+      });
+
+      createOrUpdateChart('chartOperasionalDedicated', 'pie', {
+        labels: Object.keys(s.operasional),
+        datasets: [{ data: Object.values(s.operasional), backgroundColor: ['#2a9d8f', '#e76f51'] }]
+      }, { plugins: { legend: { position: 'bottom' } } });
+    }
+  }
+
+  function createOrUpdateChart(canvasId, type, data, extraOptions = {}) {
+    if (chartInstances[canvasId]) {
+      chartInstances[canvasId].destroy();
+    }
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    chartInstances[canvasId] = new Chart(ctx, {
+      type: type,
+      data: data,
+      options: Object.assign({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { font: { family: 'Plus Jakarta Sans', weight: '600' } } } }
+      }, extraOptions)
+    });
+  }
+
+  function populateColumnSelector(headers) {
+    const select = document.getElementById('select-column');
+    select.innerHTML = '';
+    headers.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h;
+      opt.textContent = h;
+      select.appendChild(opt);
+    });
+    if (headers.length > 0) select.selectedIndex = 0;
+  }
+
+  function renderCustomChart() {
+    const selectEl = document.getElementById('select-column');
+    if (!selectEl) return;
+    const selectedCol = selectEl.value;
+    let chartType = document.getElementById('select-chart-type').value;
+    if (!selectedCol) return;
+
+    const stats = {};
+    rawDataGlobal.forEach(row => {
+      let val = row[selectedCol];
+      if (val && val !== '-') {
+        let label = val.length > 40 ? val.substring(0, 37) + '...' : val;
+        stats[label] = (stats[label] || 0) + 1;
+      }
+    });
+
+    const labels = Object.keys(stats);
+    const dataValues = Object.values(stats);
+
+    const breakdownList = document.getElementById('custom-breakdown-list');
+    breakdownList.innerHTML = '';
+
+    if (labels.length === 0) {
+      breakdownList.innerHTML = '<div class="list-group-item text-muted text-center py-3">Tidak ada data</div>';
+    } else {
+      let sum = dataValues.reduce((a, b) => a + b, 0);
+      labels.forEach((lbl, idx) => {
+        const val = dataValues[idx];
+        const pct = sum > 0 ? ((val / sum) * 100).toFixed(1) : 0;
+        const item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center py-2 px-3';
+        item.innerHTML = `
+          <span class="text-truncate fs-7 text-charcoal me-2" title="${lbl}">${lbl}</span>
+          <span class="badge rounded-pill" style="background-color: var(--co-charcoal); color:#fff;">${val} (${pct}%)</span>
+        `;
+        breakdownList.appendChild(item);
+      });
+    }
+
+    if (customChartInstance) customChartInstance.destroy();
+
+    let isHorizontal = false;
+    if (chartType === 'horizontalBar') {
+      chartType = 'bar';
+      isHorizontal = true;
+    }
+
+    customChartInstance = new Chart(document.getElementById('chartCustom'), {
+      type: chartType,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: selectedCol,
+          data: dataValues,
+          backgroundColor: chartType === 'line' ? 'rgba(42, 157, 143, 0.2)' : coolorsPalette.slice(0, Math.max(labels.length, 1)),
+          borderColor: '#2a9d8f',
+          fill: chartType === 'line',
+          tension: 0.35,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        indexAxis: isHorizontal ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: chartType === 'doughnut' || chartType === 'pie' || chartType === 'polarArea', position: 'bottom' }
+        },
+        scales: (chartType === 'bar' || chartType === 'line') ? {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+          x: { grid: { display: false } }
+        } : {}
+      }
+    });
+  }
+
+  function renderKategoriList(kategori, total) {
+    const container = document.getElementById('kategori-list');
+    container.innerHTML = '';
+    for (const [key, value] of Object.entries(kategori)) {
+      const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
+      const row = document.createElement('div');
+      row.className = 'd-flex align-items-center justify-content-between py-1';
+      row.innerHTML = `
+        <span class="fs-7 text-charcoal fw-medium text-truncate" style="max-width: 180px;">${key}</span>
+        <span class="badge bg-pal-charcoal">${value} (${pct}%)</span>
+      `;
+      container.appendChild(row);
+    }
+  }
+
+  function formatNumber(num) {
+    return new Intl.NumberFormat('id-ID').format(num || 0);
+  }
+
+  function formatRupiah(num) {
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(num || 0);
+  }
+
+  function parseRupiah(val) {
+    if (!val) return 0;
+    var str = val.toString().replace(/[^0-9]/g, '');
+    return parseInt(str) || 0;
+  }
+
+  function getMockData() {
+    return {
+      headers: ["Timestamp", "Nama Usaha", "Kecamatan", "Jenis Usaha", "Status Beroperasi", "Pengunjung Domestik", "Pengunjung Luar Negeri", "Pendapatan Tiket"],
+      rawData: [
+        { "Timestamp": "2026-03-01 10:00:00", "Nama Usaha": "Segeh Coffee & Eatery", "Kecamatan": "Lubuk Sikaping", "Jenis Usaha": "Kuliner", "Status Beroperasi": "Ya", "Pengunjung Domestik": "1200", "Pengunjung Luar Negeri": "5", "Pendapatan Tiket": "Rp 0" },
+        { "Timestamp": "2026-03-02 11:30:00", "Nama Usaha": "Penginapan Merpati", "Kecamatan": "Lubuk Sikaping", "Jenis Usaha": "Akomodasi", "Status Beroperasi": "Ya", "Pengunjung Domestik": "180", "Pengunjung Luar Negeri": "4", "Pendapatan Tiket": "Rp 0" },
+        { "Timestamp": "2026-03-03 14:15:00", "Nama Usaha": "Museum Tuanku Imam Bonjol", "Kecamatan": "Bonjol", "Jenis Usaha": "Destinasi Wisata", "Status Beroperasi": "Ya", "Pengunjung Domestik": "2500", "Pengunjung Luar Negeri": "40", "Pendapatan Tiket": "Rp 5.000.000" },
+        { "Timestamp": "2026-03-04 09:00:00", "Nama Usaha": "Pemandian Air Hangat", "Kecamatan": "Bonjol", "Jenis Usaha": "Destinasi Wisata", "Status Beroperasi": "Ya", "Pengunjung Domestik": "850", "Pengunjung Luar Negeri": "2", "Pendapatan Tiket": "Rp 1.500.000" },
+        { "Timestamp": "2026-03-05 16:20:00", "Nama Usaha": "Kerajinan Sulam Pasaman", "Kecamatan": "Rao", "Jenis Usaha": "Ekonomi Kreatif", "Status Beroperasi": "Ya", "Pengunjung Domestik": "300", "Pengunjung Luar Negeri": "12", "Pendapatan Tiket": "Rp 0" }
+      ]
+    };
+  }
+</script>
+</body>
+</html>
