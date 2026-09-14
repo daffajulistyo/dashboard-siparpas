@@ -305,17 +305,21 @@
     <!-- Main Content Container -->
     <main class="container-fluid px-4 py-4">
 
-      <!-- Filter Bar: Date Range & Kecamatan -->
+      <!-- Filter Bar: Bulan & Tahun Lapor, Serta Kecamatan -->
       <div class="card p-3 mb-4 shadow-sm border">
         <div class="card-body p-1">
           <div class="row g-3 align-items-end">
             <div class="col-12 col-sm-6 col-md-3">
-              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar-event me-1 text-green"></i> Dari Tanggal</label>
-              <input type="date" id="filter-start-date" class="form-control form-control-sm">
+              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar me-1 text-green"></i> Bulan Lapor</label>
+              <select id="filter-bulan" class="form-select form-select-sm">
+                <option value="ALL">Semua Bulan</option>
+              </select>
             </div>
             <div class="col-12 col-sm-6 col-md-3">
-              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar-event me-1 text-green"></i> Sampai Tanggal</label>
-              <input type="date" id="filter-end-date" class="form-control form-control-sm">
+              <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-calendar-event me-1 text-green"></i> Tahun Lapor</label>
+              <select id="filter-tahun" class="form-select form-select-sm">
+                <option value="ALL">Semua Tahun</option>
+              </select>
             </div>
             <div class="col-12 col-sm-6 col-md-3">
               <label class="form-label fs-7 fw-bold text-muted mb-1"><i class="ti ti-map-pin me-1 text-green"></i> Filter Kecamatan</label>
@@ -805,21 +809,55 @@
     rawDataGlobal = res.rawData || [];
     headersGlobal = res.headers || [];
 
-    populateKecamatanFilter(rawDataGlobal);
+    populateDropdownFilters(rawDataGlobal);
     populateColumnSelector(headersGlobal);
     applyFilters();
   }
 
-  function populateKecamatanFilter(rows) {
+  const allMonthsList = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  function populateDropdownFilters(rows) {
     const kecSelect = document.getElementById('filter-kecamatan');
+    const bulanSelect = document.getElementById('filter-bulan');
+    const tahunSelect = document.getElementById('filter-tahun');
+
     kecSelect.innerHTML = '<option value="ALL">Semua Kecamatan</option>';
+    bulanSelect.innerHTML = '<option value="ALL">Semua Bulan</option>';
+    tahunSelect.innerHTML = '<option value="ALL">Semua Tahun</option>';
+
+    // Always populate all 12 Months
+    allMonthsList.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      bulanSelect.appendChild(opt);
+    });
     
     const kecSet = new Set();
+    const tahunSet = new Set(["2024", "2025", "2026"]);
+
     rows.forEach(r => {
-      for (const k in r) {
-        if (k.toLowerCase().includes('kecamatan')) {
-          if (r[k] && r[k] !== '-') kecSet.add(r[k].trim());
+      // Kecamatan from row or keys
+      if (r['5. Di kecamatan mana usaha atau tempat tersebut berada?']) {
+        kecSet.add(r['5. Di kecamatan mana usaha atau tempat tersebut berada?'].trim());
+      } else {
+        for (const k in r) {
+          if (k.toLowerCase().includes('kecamatan') && r[k] && r[k] !== '-') {
+            kecSet.add(r[k].trim());
+          }
         }
+      }
+
+      // Tahun from reported column or keys
+      if (r['_tahunLapor'] && r['_tahunLapor'] !== '-') {
+        // Handle comma-separated or single year
+        r['_tahunLapor'].split(',').forEach(t => {
+          let cleanT = t.trim();
+          if (cleanT && cleanT !== '-') tahunSet.add(cleanT);
+        });
       }
     });
 
@@ -829,35 +867,50 @@
       opt.textContent = kec;
       kecSelect.appendChild(opt);
     });
+
+    Array.from(tahunSet).sort().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      tahunSelect.appendChild(opt);
+    });
+
+    // Explicitly set default value to ALL
+    bulanSelect.value = 'ALL';
+    tahunSelect.value = 'ALL';
+    kecSelect.value = 'ALL';
   }
 
   function resetFilters() {
-    document.getElementById('filter-start-date').value = '';
-    document.getElementById('filter-end-date').value = '';
+    document.getElementById('filter-bulan').value = 'ALL';
+    document.getElementById('filter-tahun').value = 'ALL';
     document.getElementById('filter-kecamatan').value = 'ALL';
     applyFilters();
   }
 
   function applyFilters() {
-    const startDateVal = document.getElementById('filter-start-date').value;
-    const endDateVal = document.getElementById('filter-end-date').value;
+    const selectedBulan = document.getElementById('filter-bulan').value;
+    const selectedTahun = document.getElementById('filter-tahun').value;
     const selectedKec = document.getElementById('filter-kecamatan').value;
 
-    const startDate = startDateVal ? new Date(startDateVal) : null;
-    const endDate = endDateVal ? new Date(endDateVal + 'T23:59:59') : null;
-
     const filteredRows = rawDataGlobal.filter(row => {
-      if (startDate || endDate) {
-        let timestampStr = row['Timestamp'] || row['timestamp'] || row[headersGlobal[0]];
-        if (timestampStr) {
-          let rowDate = new Date(timestampStr);
-          if (!isNaN(rowDate.getTime())) {
-            if (startDate && rowDate < startDate) return false;
-            if (endDate && rowDate > endDate) return false;
-          }
+      // 1. Bulan filter check (Exact check on _bulanLapor)
+      if (selectedBulan !== 'ALL') {
+        const rowBulan = row['_bulanLapor'] || '';
+        if (!isMonthMatch(rowBulan, selectedBulan)) {
+          return false;
         }
       }
 
+      // 2. Tahun filter check (Exact check on _tahunLapor)
+      if (selectedTahun !== 'ALL') {
+        const rowTahun = (row['_tahunLapor'] || '').toString();
+        if (rowTahun === '-' || !rowTahun.includes(selectedTahun)) {
+          return false;
+        }
+      }
+
+      // 3. Kecamatan filter check
       if (selectedKec !== 'ALL') {
         let rowKec = '';
         for (const k in row) {
@@ -873,7 +926,32 @@
     });
 
     calculateAndRender(filteredRows);
-    renderCustomChart();
+  }
+
+  function isMonthMatch(val, selectedMonth) {
+    if (!val || val === '-') return false;
+    let v = val.toString().toLowerCase().trim();
+    let sel = selectedMonth.toLowerCase().trim();
+
+    // Direct match check
+    if (v === sel) return true;
+
+    const monthMap = {
+      "1": "januari", "01": "januari", "jan": "januari", "januari": "januari",
+      "2": "februari", "02": "februari", "feb": "februari", "februari": "februari",
+      "3": "maret", "03": "maret", "mar": "maret", "maret": "maret",
+      "4": "april", "04": "april", "apr": "april", "april": "april",
+      "5": "mei", "05": "mei", "may": "mei", "mei": "mei",
+      "6": "juni", "06": "juni", "jun": "juni", "juni": "juni",
+      "7": "juli", "07": "juli", "jul": "juli", "juli": "juli",
+      "8": "agustus", "08": "agustus", "aug": "agustus", "agustus": "agustus",
+      "9": "september", "09": "september", "sep": "september", "september": "september",
+      "10": "oktober", "10": "oktober", "okt": "oktober", "oktober": "oktober",
+      "11": "november", "11": "november", "nov": "november", "november": "november",
+      "12": "desember", "12": "desember", "des": "desember", "desember": "desember"
+    };
+
+    return monthMap[v] === sel;
   }
 
   function calculateAndRender(rows) {
